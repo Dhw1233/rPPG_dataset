@@ -24,9 +24,9 @@ import matplotlib.pyplot as plt
 import pulse_dataset_3d
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
-                    help='number of data loading workers (default: 4)')
-parser.add_argument('--epochs', default=15, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=1, type=int, metavar='N',
+                    help='number of data loading workers (default: 1)')
+parser.add_argument('--epochs', default=30, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -196,13 +196,10 @@ def adjust_learning_rate(optimizer, epoch, every):
 
 if __name__ == '__main__':
     train_sequence_list = "train_seq.txt"  # "sequence_test.txt"#   "sequence_test.txt"
-    root_dir = 'E:/Datasets_PULSE/set_all/'
+    root_dir = "E:\\DeepPulse-pytorch\\01-01"
     seq_list = []
     end_indexes = []
-    with open(train_sequence_list, 'r') as seq_list_file:
-        for line in seq_list_file:
-            seq_list.append(line.rstrip('\n'))
-
+    seq_list.append("01-01")
     i = 0
     for s in seq_list:
         i+=1
@@ -225,13 +222,10 @@ if __name__ == '__main__':
     print(end_indexes)
 
     test_sequence_list = "test_seq.txt"
-    root_dir = 'E:/Datasets_PULSE/set_all/'
+    root_dir = "E:\\DeepPulse-pytorch\\01-01"
     seq_list = []
     end_indexes_test = []
-    with open(test_sequence_list, 'r') as seq_list_file:
-        for line in seq_list_file:
-            seq_list.append(line.rstrip('\n'))
-    i = 0
+    seq_list.append("01-01")
     for s in seq_list:
         i += 1
         sequence_dir = os.path.join(root_dir, s)
@@ -301,25 +295,7 @@ if __name__ == '__main__':
                                                length=len(sampler_test), transform=transforms.Compose([
                                                                                                 transforms.ToTensor(),
                                                                                                 normalize]))
-    # Visualize frames
-    # fig = plt.figure()
-    # for i in range(len(pulse_test)):
-    #     sample = pulse[i]
-    #     # print(sample)
-    #     data = sample[0]
-    #     print(data.size())
-    #     print(i, sample[0].shape, torch.mean(sample[1]))
-    #     for b in range(data.size()[1]):
-    #         # print(b)
-    #         ax = plt.subplot(8, 8, b+1)
-    #         # print(sample[0][0].size())
-    #         img = data.permute(1, 2, 3, 0)
-    #         print(img.size(),img[b].size())
-    #         plt.imshow((img[b]))
-    #         # plt.tight_layout()
-    #         # ax.set_title('Sample #{}'.format(b))
-    #         ax.axis('off')
-    #     plt.show()
+
 
     train_loader = torch.utils.data.DataLoader(
         pulse,
@@ -341,7 +317,7 @@ if __name__ == '__main__':
     #                             weight_decay=args.weight_decay)
     optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                  weight_decay=args.weight_decay)
-
+    print("model parameter:",sum([p.numel() for p in model.parameters()]))
     if args.evaluate:
         validate(val_loader, model, criterion)
     print('starting training...')

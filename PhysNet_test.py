@@ -16,12 +16,12 @@ from PhysNet import NegPearson
 from PhysNet import PhysNet
 from scipy.stats import pearsonr
 import heartpy as hp
-from utils import butter_bandpass_filter
+from utils import butter_bandpass_filter,calculate_statistics,prune_weights
 import torch.nn as nn
 import time
 
 
-resume = 'save_temp/checkpoint.tar'
+resume = 'save_temp/drop_3d_12.tar'
 print("initialize model...")
 
 seq_len = 32
@@ -39,8 +39,8 @@ if os.path.isfile(resume):
 else:
     print("=> no checkpoint found at '{}'".format(resume))
 
-sequence_list = "sequence_test.txt"
-root_dir = 'set_all/'
+sequence_list = "test_seq.txt"
+root_dir = "E:\\DeepPulse-pytorch\\01-01"
 seq_list = []
 end_indexes_test = []
 with open(sequence_list, 'r') as seq_list_file:
@@ -79,6 +79,8 @@ pulse_test = PulseDataset(sequence_list, root_dir, seq_len=seq_len,
 val_loader = torch.utils.data.DataLoader(pulse_test, batch_size=1, shuffle=False, sampler=sampler_test, pin_memory=True)
 
 model.eval()
+# model = model.half()
+# model = prune_weights(model,1e-6)
 criterion = NegPearson()
 criterion = criterion.cuda()
 
@@ -116,13 +118,13 @@ yr = butter_bandpass_filter(outputs, lowcut, highcut, fs, order=4)
 yr = (yr - np.mean(yr)) / np.std(yr)
 
 plt.subplots_adjust(right=0.7)
-plt.plot(outputs, alpha=0.7, label='wyjście\n sieci')
-plt.plot(yr, label='wyjście\n sieci')
-plt.plot(reference_, '--', label='referencja\n PPG')
+plt.plot(outputs, label='output of\n physnet')
+#plt.plot(yr, label='wyjście\n sieci')
+plt.plot(reference_, '--', label='true_label\nof PPG')
 
 plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize='large')
 plt.ylabel('Amplituda', fontsize='large', fontweight='semibold')
-plt.xlabel('Czas [próbka]', fontsize='large', fontweight='semibold')
+plt.xlabel('time', fontsize='large', fontweight='semibold')
 plt.grid()
 plt.xlim([350, 550])
 plt.ylim([-2, 3])
@@ -147,14 +149,16 @@ for i in range(2*win, len(reference_), win):
     bpm_ref.append(30/(win/len(peaks))*win)
     bmmp_filt.append(measures2['bpm'])
     _, mmm = hp.process(yr[i:i + win], 30.0)
-    bpm_out.append(mmm['bpm'])
+    bpm_out.append(0 if mmm['bpm'] == 'nan' else mmm['bpm'])
     bpm_out2.append(30/(win/len(peaks_out))*win)
 
-corr, _ = pearsonr(bmmp_filt, bpm_out)
-c = np.corrcoef(bmmp_filt, bpm_out)
-cc = np.corrcoef(bpm_ref, bpm_out2)
-ccc = np.corrcoef(bmmp_filt, bpm_out2)
-print('Correlation:', c)
+print(bmmp_filt)
+print(bpm_out)
+# corr, _ = pearsonr(bmmp_filt, bpm_out)
+# c = np.corrcoef(bmmp_filt, bpm_out)
+# cc = np.corrcoef(bpm_ref, bpm_out2)
+# ccc = np.corrcoef(bmmp_filt, bpm_out2)
+# print('Correlation:', c)
 
 plt.subplots_adjust(right=0.7)
 time = np.arange(0, 3, 1 / fs)
@@ -171,8 +175,8 @@ plt.xlim(-0.1, 10)
 plt.ylim(10e-6, 10e6)
 plt.semilogy(frequency, power_spectrum, label='referencja\n PPG')
 plt.ylabel('|A(f)|', fontsize='large', fontweight='semibold')
-plt.xlabel('Częstotliwość f [Hz]', fontsize='large', fontweight='semibold')
-plt.title('Częstitliwościowe widmo mocy')
+plt.xlabel('pinlv f [Hz]', fontsize='large', fontweight='semibold')
+plt.title('gonglvpinpu')
 plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 plt.show()
 

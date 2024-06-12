@@ -1,0 +1,15 @@
+63 seqs
+128 frames per seq
+
+vanilla output:23.57917022705078
+MAE: tensor(1.1106, dtype=torch.float64) 
+MSE: tensor(1.8754, dtype=torch.float64) 
+RMSE: tensor(1.3695, dtype=torch.float64) 
+SE: tensor(0.0305, dtype=torch.float64)
+
+
+processed output: 22.820616483688354 
+MAE: tensor(1.1048, dtype=torch.float64) 
+MSE: tensor(1.8499, dtype=torch.float64) 
+RMSE: tensor(1.3601, dtype=torch.float64) 
+SE: tensor(0.0303, dtype=torch.float64)

@@ -3,6 +3,7 @@ import os
 from torch.utils.data import Dataset
 import torch
 import numpy as np
+import json
 import pandas as pd
 from PIL import Image
 from scipy.signal import resample
@@ -26,9 +27,7 @@ class PulseDataset(Dataset):
         :param transform: transforms to apply to data
         """
         seq_list = []
-        with open(sequence_list, 'r') as seq_list_file:
-            for line in seq_list_file:
-                seq_list.append(line.rstrip('\n'))
+        seq_list.append("01-01")
         self.frames_list = pd.DataFrame()
         for s in seq_list:
             sequence_dir = os.path.join(root_dir, s)
@@ -43,16 +42,22 @@ class PulseDataset(Dataset):
                     fr_list = glob.glob(sequence_dir + '/*.png')
                 else:
                     fr_list = glob.glob(sequence_dir + '/*.png')
-
-            reference = pd.read_csv(sequence_dir+'.txt', sep='\t')
-
-            ref = reference.loc[:, 'waveform']
+            json_file = sequence_dir+'.json'
+            with open(json_file, 'r',encoding='utf_8') as file:
+                reference = json.load(file)
+            
+            ref = []
+            print(len(reference['/FullPackage']))
+            for pac in reference["/FullPackage"]:
+                value = pac['Value']
+                waveform = value['waveform']
+                ref.append(waveform)
             ref = np.array(ref)
 
             ref_resample = resample(ref, len(fr_list))
             ref_resample = (ref_resample - np.mean(ref_resample)) / (np.max(ref_resample)-np.min(ref_resample))
 
-            self.frames_list = self.frames_list.append(pd.DataFrame({'frames': fr_list, 'labels': ref_resample}))
+            self.frames_list = self.frames_list._append(pd.DataFrame({'frames': fr_list, 'labels': ref_resample}))
 
         self.length = length
         self.seq_len = seq_len

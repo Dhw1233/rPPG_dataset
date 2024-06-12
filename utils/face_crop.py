@@ -18,7 +18,7 @@ def face_crop(path='PURE', save_path='face_crop'):
     """
     if not os.path.exists(path + '/' + save_path):
         os.makedirs(path + '/' + save_path)
-    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    face_cascade = cv2.CascadeClassifier("E:\\DeepPulse-pytorch\\utils\\haarcascade_frontalface_default.xml")
 
     sequence_dir = os.path.join(path)
 
@@ -60,4 +60,4 @@ def face_crop(path='PURE', save_path='face_crop'):
 
 
 if __name__ == '__main__':
-    face_crop('../PURE/01-01', 'cropped')
+    face_crop('../01-01/01-01', 'cropped')
